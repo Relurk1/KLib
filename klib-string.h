@@ -1,14 +1,36 @@
+#pragma once
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-#pragma once
 
 typedef struct {
     char* buffer;
     size_t bufferSize;
     size_t size;
 } String;
+
+// ##########################################################
+//                  Internal Use Functions
+// ##########################################################
+
+/*
+ * @brief    Dumps all the contents of str to stdout.
+ * @param    str - the String that has its contents printed
+ * @returns  none
+ */
+void dump_string(String* str) {
+    if(str == NULL) 
+        return;
+    printf("buffer: %s\n", str->buffer);
+    printf("buffer size: %lu\n", str->bufferSize);
+    printf("string size: %lu\n", str->size);
+}
+
+void print_error(const char* func, const char* msg) {
+    fprintf(stderr, "Error in function %s: %s\n", func, msg);
+    exit(1);
+}
 
 // ##########################################################
 //                     Utility Functions
@@ -36,10 +58,8 @@ String* new_string() {
  * @returns  none
  */
 void free_string(String *str) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-        exit(1);
-    }
+    if(str == NULL) 
+        print_error("free_string", "argument str cannot be NULL");
     free(str->buffer);
     free(str);
 };
@@ -51,10 +71,8 @@ void free_string(String *str) {
  * @returns  str->size
  */
 size_t string_size(String *str) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-        exit(1);
-    }
+    if(str == NULL) 
+        print_error("string_size", "argument str cannot be NULL");
     return str->size;
 };
 
@@ -65,10 +83,8 @@ size_t string_size(String *str) {
  * @returns  str->buffer
  */
 char* c_string(String *str) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-        exit(1);
-    }
+    if(str == NULL) 
+        print_error("c_string", "argument str cannot be NULL");
     return str->buffer;
 };
 
@@ -81,14 +97,10 @@ char* c_string(String *str) {
  * @returns  str->buffer
  */
 char string_get(String *str, unsigned long index) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-        exit(1);
-    }
-    if(index >= str->size) {
-        fprintf(stderr, "argument index must be in the range [0, str->size)\n");
-        exit(1);
-    }
+    if(str == NULL) 
+        print_error("string_get", "argument str cannot be NULL");
+    if(index >= str->size)
+        print_error("string_get", "argument index must be in the range [0, str->size)");
     return str->buffer[index];
 };
 
@@ -100,10 +112,8 @@ char string_get(String *str, unsigned long index) {
  * @returns  none
  */
 void set_string(String* str, const char* src) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-        exit(1);
-    }
+    if(str == NULL) 
+        print_error("set_string", "argument str cannot be NULL");
     size_t s = strlen(src);
     if(s >= str->bufferSize) {
         str->bufferSize = s*sizeof(char)+1;
@@ -125,19 +135,6 @@ void print_string(String* str) {
     printf("%s\n", str->buffer);
 }
 
-/*
- * @brief    Dumps all the contents of str to stdout.
- * @param    str - the String that has its contents printed
- * @returns  none
- */
-void dump_string(String* str) {
-    if(str == NULL) 
-        return;
-    printf("buffer: %s\n", str->buffer);
-    printf("buffer size: %lu\n", str->bufferSize);
-    printf("string size: %lu\n", str->size);
-}
-
 // ##########################################################
 //                     Copying Functions
 // ##########################################################
@@ -150,14 +147,10 @@ void dump_string(String* str) {
  * @returns  none
  */
 void string_copy_c(String* dest, char* src) {
-    if(dest == NULL) {
-        fprintf(stderr, "argument dest cannot be NULL\n");
-        exit(1);
-    }
-    if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_copy_c", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_copy_c", "argument src cannot be NULL");
     size_t s = strlen(src);
     if(s >= dest->bufferSize) {
         dest->bufferSize = s*sizeof(char)+1;
@@ -176,14 +169,10 @@ void string_copy_c(String* dest, char* src) {
  * @returns  none
  */
 void string_copy(String* dest, String* src) {
-    if(dest == NULL) {
-        fprintf(stderr, "arguement dest cannot be NULL\n");
-        exit(1);
-    }
-    else if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_copy", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_copy", "argument src cannot be NULL");
     string_copy_c(src, dest->buffer);
 };
 
@@ -197,18 +186,12 @@ void string_copy(String* dest, String* src) {
  */
 void string_n_copy_c(String* dest, char* src, size_t num) {
     size_t s = strlen(src);
-    if(dest == NULL) {
-        fprintf(stderr, "argument dest cannot be NULL\n");
-        exit(1);
-    }
-    if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
-    if(num > s) {
-        fprintf(stderr, "num cannot be greater than strlen(src)\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_n_copy_c", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_n_copy_c", "argument src cannot be NULL");
+    if(num > s)
+        print_error("string_n_copy_c", "num cannot be greater than strlen(src)");
 
     if(num >= dest->bufferSize) {
         dest->bufferSize = num*sizeof(char)+1;
@@ -228,18 +211,12 @@ void string_n_copy_c(String* dest, char* src, size_t num) {
  * @returns  none
  */
 void string_n_copy(String* dest, String* src, size_t num) {
-    if(dest == NULL) {
-        fprintf(stderr, "argument dest cannot be NULL\n");
-        exit(1);
-    }
-    if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
-    if(num > src->size) {
-        fprintf(stderr, "num cannot be greater than src->size\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_n_copy", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_n_copy", "argument src cannot be NULL");
+    if(num > src->size)
+        print_error("string_n_copy", "num cannot be greater than strlen(src)");
     string_n_copy_c(dest, src->buffer, num);
 };
 
@@ -258,14 +235,10 @@ void string_n_copy(String* dest, String* src, size_t num) {
  */
 void string_append_c(String* dest, char* src) {
     size_t s = strlen(src);
-    if(dest == NULL) {
-        fprintf(stderr, "argument dest cannot be NULL\n");
-        exit(1);
-    }
-    if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_append_c", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_append_c", "argument src cannot be NULL");
     
     if(dest->size+s >= dest->bufferSize) {
         dest->bufferSize = (dest->size+s)*sizeof(char)+1;
@@ -283,14 +256,10 @@ void string_append_c(String* dest, char* src) {
  * @returns  none
  */
 void string_append(String* dest, String* src) {
-    if(dest == NULL) {
-        fprintf(stderr, "argument dest cannot be NULL\n");
-        exit(1);
-    }
-    if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_append", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_append", "argument src cannot be NULL");
     string_append_c(dest, src->buffer);
 };
 
@@ -304,18 +273,12 @@ void string_append(String* dest, String* src) {
  */
 void string_n_append_c(String* dest, char* src, size_t num) {
     size_t s = strlen(src);
-    if(dest == NULL) {
-        fprintf(stderr, "argument dest cannot be NULL\n");
-        exit(1);
-    }
-    if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
-    if(num > s) {
-        fprintf(stderr, "num cannot be greater than strlen(src)\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_n_append_c", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_n_append_c", "argument src cannot be NULL");
+    if(num > s)
+        print_error("tring_n_append_c", "num cannot be greater than strlen(src)");
 
     if((dest->size+num) >= dest->bufferSize) {
         dest->bufferSize = (dest->size+num)*sizeof(char)+1;
@@ -334,19 +297,83 @@ void string_n_append_c(String* dest, char* src, size_t num) {
  * @returns  none
  */
 void string_n_append(String* dest, String* src, size_t num) {
-    if(dest == NULL) {
-        fprintf(stderr, "argument dest cannot be NULL\n");
-        exit(1);
-    }
-    if(src == NULL) {
-        fprintf(stderr, "argument src cannot be NULL\n");
-        exit(1);
-    }
-    if(num > src->size) {
-        fprintf(stderr, "num cannot be greater than strlen(src)\n");
-        exit(1);
-    }
+    if(dest == NULL) 
+        print_error("string_n_append", "argument dest cannot be NULL");
+    if(src == NULL) 
+        print_error("string_n_append", "argument src cannot be NULL");
+    if(num > src->size)
+        print_error("tring_n_append", "num cannot be greater than strlen(src)");
     string_n_append_c(dest, src->buffer, num);
+}
+
+// ##########################################################
+//                  Comparison Functions
+// ##########################################################
+
+/*
+ * @brief    Compares str1 to str2.  
+             Exits with code 1 if either str1 or str2 are NULL. 
+ * @param    str1 - The first String to be compared
+ * @param    str2 - the second c-style string to be compared
+ * @returns  an integer indicating the relationship between the strings. 
+ *           <0 indicates the first character that does not match has a lower value in ptr1 than in ptr2. 
+ *            0 indicates the contents of both strings are equal. 
+ *           >0 indicates the first character that does not match has a greater value in ptr1 than in ptr2. 
+ */
+int string_compare_c (String* str1, char* str2) {
+    if(str1 == NULL)
+        print_error("string_compare_c", "argument str1 cannot be NULL");
+    if(str2 == NULL)
+        print_error("string_compare_c", "argument str2 cannot be NULL");
+    return strcmp(str1->buffer, str2);
+}
+
+/*
+ * @brief    Compares str1 to str2.  
+             Exits with code 1 if either str1 or str2 are NULL. 
+ * @param    str1 - The first String to be compared
+ * @param    str2 - the second String to be compared
+ * @returns  an integer indicating the relationship between the strings. 
+ *           <0 indicates the first character that does not match has a lower value in ptr1 than in ptr2. 
+ *            0 indicates the contents of both strings are equal. 
+ *           >0 indicates the first character that does not match has a greater value in ptr1 than in ptr2. 
+ */
+int string_compare (String* str1, String* str2) {
+    if(str1 == NULL)
+        print_error("string_compare", "argument str1 cannot be NULL");
+    if(str2 == NULL)
+        print_error("string_compare", "argument str2 cannot be NULL");
+    return strcmp(str1->buffer, str2->buffer);
+}
+
+/*
+ * @brief    Checks if str1 equals str2.  
+             Exits with code 1 if either str1 or str2 are NULL. 
+ * @param    str1 - The first String to be compared
+ * @param    str2 - the second c-style string to be compared
+ * @returns  1 if the strings are equal, 0 otherwise.
+ */
+int string_equal_c (String* str1, char* str2) {
+    if(str1 == NULL)
+        print_error("string_compare", "argument str1 cannot be NULL");
+    if(str2 == NULL)
+        print_error("string_compare", "argument str2 cannot be NULL");
+    return !strcmp(str1->buffer, str2);
+}
+
+/*
+ * @brief    Checks if str1 equals str2.  
+             Exits with code 1 if either str1 or str2 are NULL. 
+ * @param    str1 - The first String to be compared
+ * @param    str2 - the second String to be compared
+ * @returns  1 if the strings are equal, 0 otherwise.
+ */
+int string_equal (String* str1, String* str2) {
+    if(str1 == NULL)
+        print_error("string_compare", "argument str1 cannot be NULL");
+    if(str2 == NULL)
+        print_error("string_compare", "argument str2 cannot be NULL");
+    return !strcmp(str1->buffer, str2->buffer);
 }
 
 // ##########################################################
@@ -361,10 +388,8 @@ void string_n_append(String* dest, String* src, size_t num) {
  * @returns  The index of the first occurence of c in str, or -1 if c is not found
  */
 size_t string_find_char(String* str, char c) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-        exit(1);
-    }
+    if(str == NULL) 
+        print_error("string_find_char", "argument str cannot be NULL");
     char* pch = strchr(str->buffer, c);
     if(pch == NULL)
         return -1;
@@ -381,13 +406,10 @@ size_t string_find_char(String* str, char c) {
  * @returns  If a token is found, a pointer to the beginning of the token, otherwise NULL
  */
 String** string_tokenize_c(String* str, const char* delimiters, unsigned int* c) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-    }
-    if(delimiters == NULL) {
-        fprintf(stderr, "argument delimiters cannot be NULL\n");
-        exit(1);
-    }
+    if(str == NULL) 
+        print_error("string_tokenize_c", "argument str cannot be NULL");
+    if(delimiters == NULL) 
+        print_error("string_tokenize_c", "argument delimiters cannot be NULL");
 
     char* temp1 = (char*)malloc(str->size*sizeof(char)+1);
     char* temp2 = (char*)malloc(str->size*sizeof(char)+1);
@@ -429,14 +451,10 @@ String** string_tokenize_c(String* str, const char* delimiters, unsigned int* c)
  * @returns  If a token is found, a pointer to the beginning of the token, otherwise NULL
  */
 String** string_tokenize(String* str, String* delimiters, unsigned int* c) {
-    if(str == NULL) {
-        fprintf(stderr, "argument str cannot be NULL\n");
-    }
-    if(delimiters == NULL) {
-        fprintf(stderr, "argument delimiters cannot be NULL\n");
-        exit(1);
-    }
+    if(str == NULL)
+        print_error("string_tokenize", "argument str cannot be NULL");
+    if(delimiters == NULL)
+        print_error("string_tokenize", "argument delimiters cannot be NULL");
     return string_tokenize_c(str, delimiters->buffer, c);
 }
-
 
