@@ -14,11 +14,6 @@ typedef struct {
 //                  Internal Use Functions
 // ##########################################################
 
-/*
- * @brief    Dumps all the contents of str to stdout.
- * @param    str - the String that has its contents printed
- * @returns  none
- */
 void dump_string(String* str) {
     if(str == NULL) 
         return;
@@ -37,9 +32,9 @@ void print_error(const char* func, const char* msg) {
 // ##########################################################
 
 /*
- * @brief    Allocates the memory needed for the String struct, and initializes the internal buffer and the size variables
+ * @brief    Allocates the memory needed for the String, and initializes the internal buffer and the size variables
  * @param    none
- * @returns  A pointer to the newly created String struct
+ * @returns  A pointer to the newly created String
  */
 String* new_string() {
     String* str;
@@ -77,7 +72,7 @@ size_t string_size(String *str) {
 };
 
 /*
- * @brief    Returns the internal buffer of the string as a character array. 
+ * @brief    Returns the internal buffer as a c-style string. 
              Exits with code 1 if str is NULL
  * @param    str - The String for which the buffer is requested
  * @returns  str->buffer
@@ -94,15 +89,31 @@ char* c_string(String *str) {
              Exits with code 1 if index >= str->size
  * @param    str - The String for which the character at index is requested
  * @param    index - a location within the buffer of str
- * @returns  str->buffer
+ * @returns  the character at index c within the buffer
  */
-char string_get(String *str, unsigned long index) {
+char string_get_index(String* str, size_t index) {
     if(str == NULL) 
-        print_error("string_get", "argument str cannot be NULL");
+        print_error("string_get_index", "argument str cannot be NULL");
     if(index >= str->size)
-        print_error("string_get", "argument index must be in the range [0, str->size)");
+        print_error("string_get_index", "argument index must be in the range [0, str->size)");
     return str->buffer[index];
 };
+
+/*
+ * @brief    sets the character at index within the internal buffer of str to c. 
+             Exits with code 1 if str is NULL. 
+             Exits with code 1 if index >= str->size
+ * @param    str - The String for which the character at index is set
+ * @param    index - a location within the buffer of str
+ * @returns  none
+ */
+void string_set_index(String* str, size_t index, char c) {
+    if(str == NULL) 
+        print_error("string_set_index", "argument str cannot be NULL");
+    if(index >= str->size)
+        print_error("string_set_index", "argument index must be in the range [0, str->size)");
+    str->buffer[index] = c;
+}
 
 /*
  * @brief    Sets the internal buffer of the string to a specified value, overwriting anything that may have been there already. 
@@ -123,6 +134,35 @@ void set_string(String* str, const char* src) {
     strcpy(str->buffer, src);
     str->size = s;
 };
+
+/*
+ * @brief    Allocates the memory needed for the String, and initializes the internal buffer and the size variables. 
+             Sets the newly allocated String's buffer to str
+ * @param    none
+ * @returns  A pointer to the newly created String
+ */
+String* new_set_string(const char* str) {
+    String* newstr = new_string();
+    set_string(newstr, str);
+    return newstr;
+}
+
+/*
+ * @brief    Allocates the memory needed for the String, and initializes the internal buffer and the size variables. 
+             Sets the newly allocated String's buffer to a copy of str's buffer
+ * @param    none
+ * @returns  A pointer to the newly created String
+ */
+String* new_copy_string(String* str) {
+    if(str == NULL)
+        print_error("new_copy_string", "argument str cannot be NULL");
+    String* newstr = (String*)malloc(sizeof(String));
+    newstr->size = str->size;
+    newstr->bufferSize = str->bufferSize;
+    newstr->buffer = (char*)malloc(sizeof(char)*newstr->bufferSize);
+    strcpy(newstr->buffer, str->buffer);
+    return newstr;
+}
 
 /*
  * @brief    Prints the buffer of str to stdout 
@@ -219,8 +259,6 @@ void string_n_copy(String* dest, String* src, size_t num) {
         print_error("string_n_copy", "num cannot be greater than strlen(src)");
     string_n_copy_c(dest, src->buffer, num);
 };
-
-
 
 // ##########################################################
 //                  Concatenation Functions
@@ -456,5 +494,63 @@ String** string_tokenize(String* str, String* delimiters, unsigned int* c) {
     if(delimiters == NULL)
         print_error("string_tokenize", "argument delimiters cannot be NULL");
     return string_tokenize_c(str, delimiters->buffer, c);
+}
+
+/*
+ * @brief    Finds the first occurence of str2 in str1. 
+             Exits with code 1 if either str1 or str2 are NULL
+ * @param    str1 - the String in which the substring is seearched for
+ * @param    str2 - the c-style string to be located
+ * @returns  The index of the first occurence of str2 in str1, or -1 if str2 is not found
+ */
+size_t string_find_substring_c(String* str1, char* str2) {
+    if(str1 == NULL)
+        print_error("string_find_substring_c", "argument str1 cannot be NULL");
+    if(str2 == NULL)
+        print_error("string_find_substring_c", "argument str2 cannot be NULL");
+    char* pch = strstr(str1->buffer, str2);
+    if(pch == NULL)
+        return -1;
+    return pch-str1->buffer+1;
+}
+
+/*
+ * @brief    Finds the first occurence of str2 in str1. 
+             Exits with code 1 if either str1 or str2 are NULL
+ * @param    str1 - the String in which the substring is searched for
+ * @param    str2 - the String to be located
+ * @returns  The index of the first occurence of str2 in str1, or -1 if str2 is not found
+ */
+size_t string_find_substring(String* str1, String* str2) {
+    if(str1 == NULL)
+        print_error("string_find_substring", "argument str1 cannot be NULL");
+    if(str2 == NULL)
+        print_error("string_find_substring", "argument str2 cannot be NULL");
+    return string_find_substring_c(str1, str2->buffer);
+}
+
+/*
+ * @brief    Gets the substring from str, as specified by location and length. It is the caller's responsibility to free the returned string appropriately. 
+             Exits with code 1 if str is NULL. 
+             Exits with code 1 if location is out of bounds or location+length is out of bounds
+ * @param    str - the String in which the substring is searched for
+ * @param    location - the start index of the substring within str
+ * @param    length - the size of the substring
+ * @returns  A pointer to a new String, containing the requested substring.
+ */
+String* string_get_substring(String* str, size_t location, size_t length) {
+    if(str == NULL)
+        print_error("string_get_substring", "argument str cannot be NULL");
+    if(location >= str->size)
+        print_error("string_get_substring", "argument location must be within the range [0, str->size)");
+    if(location+length > str->size)
+        print_error("string_get_substring", "sum of arguments location and length cannot exceed str->size");
+
+    char substr[length+1];
+    for(int i=0; i < length; i++) {
+        substr[i] = str->buffer[i+location];
+    }
+    substr[length] = '\0';
+    return new_set_string(substr);
 }
 
