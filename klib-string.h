@@ -10,6 +10,42 @@ typedef struct {
     size_t size;
 } String;
 
+void dump_string(String* str);
+void print_error(const char* func, const char* msg);
+String* new_string();
+void free_string(String* str);
+size_t string_size(String* str);
+char* c_string(String* str);
+char get_index(String* str, size_t index);
+void set_index(String* str, size_t index, char c);
+void string_set(String* str, const char* src);
+String* new_set_string(const char* str);
+String* new_copy_string(String* str);
+void print_string(String* str);
+String* to_lowercase(String* str);
+String* to_uppercase(String* str);
+String* lstrip(String* str);
+String* rstrip(String* str);
+void string_copy_c(String* dest, char* src);
+void string_copy(String* dest, String* src);
+void string_n_copy_c(String* dest, char* src, size_t num);
+void string_n_copy(String* dest, String* src, size_t num);
+void string_append_c(String* dest, char* src);
+void string_append(String* dest, String* src);
+void string_n_append_c(String* dest, char* src, size_t num);
+void string_n_append(String* dest, String* src, size_t num);
+int string_compare_c(String* str1, char* str);
+int string_compare(String* str1, String* str2);
+int string_equal_c(String* str1, char* str2);
+int string_equal(String* str1, String* str2);
+size_t find_char(String* str, char c);
+String** tokenize_c(String* str, const char* delimiters, unsigned int* c);
+String** tokenize(String* str, String* delimiters, unsigned int* c);
+size_t find_substring_c(String* str1, char* str2);
+size_t find_substring(String* str1, String* str2);
+String* get_substring(String* str, size_t location, size_t length);
+
+
 // ##########################################################
 //                  Internal Use Functions
 // ##########################################################
@@ -20,12 +56,12 @@ void dump_string(String* str) {
     printf("buffer: %s\n", str->buffer);
     printf("buffer size: %lu\n", str->bufferSize);
     printf("string size: %lu\n", str->size);
-}
+};
 
 void print_error(const char* func, const char* msg) {
     fprintf(stderr, "Error in function %s: %s\n", func, msg);
     exit(1);
-}
+};
 
 // ##########################################################
 //                     Utility Functions
@@ -52,7 +88,7 @@ String* new_string() {
  * @param    str - The String being freed
  * @returns  none
  */
-void free_string(String *str) {
+void free_string(String* str) {
     if(str == NULL) 
         print_error("free_string", "argument str cannot be NULL");
     free(str->buffer);
@@ -65,7 +101,7 @@ void free_string(String *str) {
  * @param    str - The String for which the size is queried
  * @returns  str->size
  */
-size_t string_size(String *str) {
+size_t string_size(String* str) {
     if(str == NULL) 
         print_error("string_size", "argument str cannot be NULL");
     return str->size;
@@ -77,7 +113,7 @@ size_t string_size(String *str) {
  * @param    str - The String for which the buffer is requested
  * @returns  str->buffer
  */
-char* c_string(String *str) {
+char* c_string(String* str) {
     if(str == NULL) 
         print_error("c_string", "argument str cannot be NULL");
     return str->buffer;
@@ -91,11 +127,11 @@ char* c_string(String *str) {
  * @param    index - a location within the buffer of str
  * @returns  the character at index c within the buffer
  */
-char string_get_index(String* str, size_t index) {
+char get_index(String* str, size_t index) {
     if(str == NULL) 
-        print_error("string_get_index", "argument str cannot be NULL");
+        print_error("get_index", "argument str cannot be NULL");
     if(index >= str->size)
-        print_error("string_get_index", "argument index must be in the range [0, str->size)");
+        print_error("get_index", "argument index must be in the range [0, str->size)");
     return str->buffer[index];
 };
 
@@ -107,13 +143,13 @@ char string_get_index(String* str, size_t index) {
  * @param    index - a location within the buffer of str
  * @returns  none
  */
-void string_set_index(String* str, size_t index, char c) {
+void set_index(String* str, size_t index, char c) {
     if(str == NULL) 
-        print_error("string_set_index", "argument str cannot be NULL");
+        print_error("set_index", "argument str cannot be NULL");
     if(index >= str->size)
-        print_error("string_set_index", "argument index must be in the range [0, str->size)");
+        print_error("set_index", "argument index must be in the range [0, str->size)");
     str->buffer[index] = c;
-}
+};
 
 /*
  * @brief    Sets the internal buffer of the string to a specified value, overwriting anything that may have been there already. 
@@ -122,9 +158,9 @@ void string_set_index(String* str, size_t index, char c) {
  * @param    src - the source  c-style string. The buffer of str is changed to match src exactly.
  * @returns  none
  */
-void set_string(String* str, const char* src) {
+void string_set(String* str, const char* src) {
     if(str == NULL) 
-        print_error("set_string", "argument str cannot be NULL");
+        print_error("string_set", "argument str cannot be NULL");
     size_t s = strlen(src);
     if(s >= str->bufferSize) {
         str->bufferSize = s*sizeof(char)+1;
@@ -143,9 +179,9 @@ void set_string(String* str, const char* src) {
  */
 String* new_set_string(const char* str) {
     String* newstr = new_string();
-    set_string(newstr, str);
+    string_set(newstr, str);
     return newstr;
-}
+};
 
 /*
  * @brief    Allocates the memory needed for the String, and initializes the internal buffer and the size variables. 
@@ -162,7 +198,7 @@ String* new_copy_string(String* str) {
     newstr->buffer = (char*)malloc(sizeof(char)*newstr->bufferSize);
     strcpy(newstr->buffer, str->buffer);
     return newstr;
-}
+};
 
 /*
  * @brief    Prints the buffer of str to stdout 
@@ -173,6 +209,107 @@ void print_string(String* str) {
     if(str == NULL) 
         return;
     printf("%s\n", str->buffer);
+};
+
+/*
+ * @brief    Makes the string entirely lowercase
+ * @param    str - the String that is converted to lowercase
+ * @returns  the paramater str
+ */
+String* to_lowercase(String* str) {
+    if(str == NULL)
+        print_error("to_lowercase", "argument str cannot be NULL");
+    for(size_t i=0; i<str->size; i++) {
+        char c = get_index(str, i);
+        if(c >= 65 && c <= 90)
+            set_index(str, i, (c+32));
+    }
+    return str;
+};
+
+/*
+ * @brief    Makes the string entirely uppercase
+ * @param    str - the String that is converted to uppercase
+ * @returns  the parameter str
+ */
+String* to_uppercase(String* str) {
+    if(str == NULL)
+        print_error("to_uppercase", "argument str cannot be NULL");
+    for(size_t i=0; i<str->size; i++) {
+        char c = get_index(str, i);
+        if(c >= 97 && c <= 122)
+            set_index(str, i, (c-32));
+    }
+    return str;
+};
+
+/*
+ * @brief    Removes all whitespace characters from the start of the string, up to the first non-whitespace character
+ * @param    str - the String that has whitespace characters removed
+ * @returns  the parameter str
+ */
+String* lstrip(String* str) {
+    if(str == NULL)
+        print_error("lstrip", "argument str cannot be NULL");
+    size_t s = str->size;
+    if(s == 0)
+        return str;
+    size_t first = 0;
+    for(size_t i=0; i<s; i++) {
+        char c = get_index(str, i);
+        if(c != ' ' && c != '\t' && c != '\r' && c != '\n' && c != '\x0b'){
+            first = i;
+            break;
+        }
+        ++first;
+    }
+    if(first == s) {
+        string_set(str, "");
+        return str;
+    }
+    String* temp = get_substring(str, first, s-first);
+    string_copy(str, temp);
+    free_string(temp);
+    return str;
+}
+
+/*
+ * @brief    Removes all whitespace characters from the end of the string, up to the first non-whitespace character
+ * @param    str - the String that has whitespace characters removed
+ * @returns  the parameter str
+ */
+String* rstrip(String* str) {
+    if(str == NULL)
+        print_error("lstrip", "argument str cannot be NULL");
+    size_t s = str->size;
+    if(s == 0)
+        return str;
+    size_t first = s-1;
+    for(size_t i=0; i<s; i++) {
+        char c = get_index(str, s-i-1);
+        if(c != ' ' && c != '\t' && c != '\r' && c != '\n' && c != '\x0b'){
+            first = s-i-1;
+            break;
+        }
+        --first;
+    }
+    if(first == 0) {
+        string_set(str, "");
+        return str;
+    }
+    String* temp = get_substring(str, 0, first+1);
+    string_copy(str, temp);
+    free_string(temp);
+    return str;
+}
+
+/*
+ * @brief    Removes all whitespace characters from the start and end of the String
+ * @param    str - the String that has whitespace characters removed
+ * @returns  the parameter str
+ */
+String* strip(String* str) {
+    return rstrip(lstrip(str));
 }
 
 // ##########################################################
@@ -196,6 +333,7 @@ void string_copy_c(String* dest, char* src) {
         dest->bufferSize = s*sizeof(char)+1;
         dest->buffer = (char*)realloc(dest->buffer, dest->bufferSize);
     }
+
     memset(dest->buffer, '\0', dest->bufferSize);
     strcpy(dest->buffer, src);
     dest->size = s;
@@ -213,7 +351,7 @@ void string_copy(String* dest, String* src) {
         print_error("string_copy", "argument dest cannot be NULL");
     if(src == NULL) 
         print_error("string_copy", "argument src cannot be NULL");
-    string_copy_c(src, dest->buffer);
+    string_copy_c(dest, src->buffer);
 };
 
 /*
@@ -324,7 +462,7 @@ void string_n_append_c(String* dest, char* src, size_t num) {
     }
     strncat(dest->buffer, src, num);
     dest->size += s;
-}
+};
 
 /*
  * @brief    Appends the first num characters from the buffer of src to the buffer of dest.  
@@ -342,7 +480,7 @@ void string_n_append(String* dest, String* src, size_t num) {
     if(num > src->size)
         print_error("tring_n_append", "num cannot be greater than strlen(src)");
     string_n_append_c(dest, src->buffer, num);
-}
+};
 
 // ##########################################################
 //                  Comparison Functions
@@ -364,7 +502,7 @@ int string_compare_c (String* str1, char* str2) {
     if(str2 == NULL)
         print_error("string_compare_c", "argument str2 cannot be NULL");
     return strcmp(str1->buffer, str2);
-}
+};
 
 /*
  * @brief    Compares str1 to str2.  
@@ -382,7 +520,7 @@ int string_compare (String* str1, String* str2) {
     if(str2 == NULL)
         print_error("string_compare", "argument str2 cannot be NULL");
     return strcmp(str1->buffer, str2->buffer);
-}
+};
 
 /*
  * @brief    Checks if str1 equals str2.  
@@ -397,7 +535,7 @@ int string_equal_c (String* str1, char* str2) {
     if(str2 == NULL)
         print_error("string_compare", "argument str2 cannot be NULL");
     return !strcmp(str1->buffer, str2);
-}
+};
 
 /*
  * @brief    Checks if str1 equals str2.  
@@ -412,7 +550,7 @@ int string_equal (String* str1, String* str2) {
     if(str2 == NULL)
         print_error("string_compare", "argument str2 cannot be NULL");
     return !strcmp(str1->buffer, str2->buffer);
-}
+};
 
 // ##########################################################
 //                  Searching Functions
@@ -425,14 +563,14 @@ int string_equal (String* str1, String* str2) {
  * @param    c - the character to be located
  * @returns  The index of the first occurence of c in str, or -1 if c is not found
  */
-size_t string_find_char(String* str, char c) {
+size_t find_char(String* str, char c) {
     if(str == NULL) 
-        print_error("string_find_char", "argument str cannot be NULL");
+        print_error("find_char", "argument str cannot be NULL");
     char* pch = strchr(str->buffer, c);
     if(pch == NULL)
         return -1;
     return pch-str->buffer+1;
-}
+};
 
 /*
  * @brief    Splits str into tokens, along the characters specified in delimiters. 
@@ -443,11 +581,11 @@ size_t string_find_char(String* str, char c) {
  * @param    c - the number of tokens found
  * @returns  If a token is found, a pointer to the beginning of the token, otherwise NULL
  */
-String** string_tokenize_c(String* str, const char* delimiters, unsigned int* c) {
+String** tokenize_c(String* str, const char* delimiters, unsigned int* c) {
     if(str == NULL) 
-        print_error("string_tokenize_c", "argument str cannot be NULL");
+        print_error("tokenize_c", "argument str cannot be NULL");
     if(delimiters == NULL) 
-        print_error("string_tokenize_c", "argument delimiters cannot be NULL");
+        print_error("tokenize_c", "argument delimiters cannot be NULL");
 
     char* temp1 = (char*)malloc(str->size*sizeof(char)+1);
     char* temp2 = (char*)malloc(str->size*sizeof(char)+1);
@@ -477,7 +615,7 @@ String** string_tokenize_c(String* str, const char* delimiters, unsigned int* c)
     free(temp2);
     *c = count;
     return tokens;
-}
+};
 
 /*
  * @brief    Splits str into tokens, along the characters specified in delimiters. 
@@ -488,13 +626,13 @@ String** string_tokenize_c(String* str, const char* delimiters, unsigned int* c)
  * @param    c - the number of tokens found
  * @returns  If a token is found, a pointer to the beginning of the token, otherwise NULL
  */
-String** string_tokenize(String* str, String* delimiters, unsigned int* c) {
+String** tokenize(String* str, String* delimiters, unsigned int* c) {
     if(str == NULL)
-        print_error("string_tokenize", "argument str cannot be NULL");
+        print_error("tokenize", "argument str cannot be NULL");
     if(delimiters == NULL)
-        print_error("string_tokenize", "argument delimiters cannot be NULL");
-    return string_tokenize_c(str, delimiters->buffer, c);
-}
+        print_error("tokenize", "argument delimiters cannot be NULL");
+    return tokenize_c(str, delimiters->buffer, c);
+};
 
 /*
  * @brief    Finds the first occurence of str2 in str1. 
@@ -503,16 +641,16 @@ String** string_tokenize(String* str, String* delimiters, unsigned int* c) {
  * @param    str2 - the c-style string to be located
  * @returns  The index of the first occurence of str2 in str1, or -1 if str2 is not found
  */
-size_t string_find_substring_c(String* str1, char* str2) {
+size_t find_substring_c(String* str1, char* str2) {
     if(str1 == NULL)
-        print_error("string_find_substring_c", "argument str1 cannot be NULL");
+        print_error("find_substring_c", "argument str1 cannot be NULL");
     if(str2 == NULL)
-        print_error("string_find_substring_c", "argument str2 cannot be NULL");
+        print_error("find_substring_c", "argument str2 cannot be NULL");
     char* pch = strstr(str1->buffer, str2);
     if(pch == NULL)
         return -1;
     return pch-str1->buffer+1;
-}
+};
 
 /*
  * @brief    Finds the first occurence of str2 in str1. 
@@ -521,13 +659,13 @@ size_t string_find_substring_c(String* str1, char* str2) {
  * @param    str2 - the String to be located
  * @returns  The index of the first occurence of str2 in str1, or -1 if str2 is not found
  */
-size_t string_find_substring(String* str1, String* str2) {
+size_t find_substring(String* str1, String* str2) {
     if(str1 == NULL)
-        print_error("string_find_substring", "argument str1 cannot be NULL");
+        print_error("find_substring", "argument str1 cannot be NULL");
     if(str2 == NULL)
-        print_error("string_find_substring", "argument str2 cannot be NULL");
-    return string_find_substring_c(str1, str2->buffer);
-}
+        print_error("find_substring", "argument str2 cannot be NULL");
+    return find_substring_c(str1, str2->buffer);
+};
 
 /*
  * @brief    Gets the substring from str, as specified by location and length. It is the caller's responsibility to free the returned string appropriately. 
@@ -538,19 +676,19 @@ size_t string_find_substring(String* str1, String* str2) {
  * @param    length - the size of the substring
  * @returns  A pointer to a new String, containing the requested substring.
  */
-String* string_get_substring(String* str, size_t location, size_t length) {
+String* get_substring(String* str, size_t location, size_t length) {
     if(str == NULL)
-        print_error("string_get_substring", "argument str cannot be NULL");
+        print_error("get_substring", "argument str cannot be NULL");
     if(location >= str->size)
-        print_error("string_get_substring", "argument location must be within the range [0, str->size)");
+        print_error("get_substring", "argument location must be within the range [0, str->size)");
     if(location+length > str->size)
-        print_error("string_get_substring", "sum of arguments location and length cannot exceed str->size");
+        print_error("get_substring", "sum of arguments location and length cannot exceed str->size");
 
     char substr[length+1];
-    for(int i=0; i < length; i++) {
+    for(size_t i=0; i < length; i++) {
         substr[i] = str->buffer[i+location];
     }
     substr[length] = '\0';
     return new_set_string(substr);
-}
+};
 
