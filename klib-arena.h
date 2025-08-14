@@ -82,30 +82,18 @@ Arena* new_arena() {
  */
 void* arena_alloc(Arena* arena, size_t size) {
     if(size > DEFAULT_CHUNK_SIZE) {
-        fprintf(stderr, "Objects inserted into the arena can have a maximum size of %d bytes\n", DEFAULT_CHUNK_SIZE);
+        fprintf(stderr, "Objects inserted into the arena can have a maximum size of %zu bytes\n", DEFAULT_CHUNK_SIZE);
         return NULL;
     }
 
     ArenaChunk* crr = arena->head;
 
-    if(crr->offset + size > DEFAULT_CHUNK_SIZE) {
-        if(crr->next != NULL) {
-            crr = crr->next;
-        }
-        else {
-            crr->next = new_chunk();
-            crr = crr->next;
-        }
-
-    }
-
     uintptr_t current = (uintptr_t)(crr->buffer + crr->offset);
     uintptr_t aligned = (current + alignof(max_align_t) - 1) & ~(uintptr_t)(alignof(max_align_t) - 1);
     size_t padding = aligned - current;
-
     crr->offset += padding;
 
-    if(crr->offset + size > DEFAULT_CHUNK_SIZE) {
+    if(crr->offset + size >= DEFAULT_CHUNK_SIZE) {
         if(crr->next != NULL) {
             crr = crr->next;
         }
@@ -115,6 +103,7 @@ void* arena_alloc(Arena* arena, size_t size) {
         }
         return crr->buffer;
     }
+
     
     void* dest = crr->buffer + crr->offset;
     crr->offset += size;
